@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Test Case Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+            margin-top: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-box {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .status-box.ready {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .status-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-box.loading {
+            background-color: #e7f3ff;
+            color: #004085;
+            border: 2px solid #b8daff;
+        }
+
+        .status-icon {
+            font-size: 20px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #667eea;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .test-case {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>🧪 AI Test Case Generator</h1>
+
+            <div class="form-group">
+                <label for="apiKey">API Key *</label>
+                <input type="text" id="apiKey" placeholder="Paste your API key here" />
+                <div class="hint">Get from console.groq.com, ai.google.dev, or platform.openai.com</div>
+            </div>
+
+            <div class="form-group">
+                <label for="aiModel">Select AI Model *</label>
+                <select id="aiModel">
+                    <option value="gemini">Google Gemini (Free)</option>
+                    <option value="groq">Groq (Free)</option>
+                    <option value="chatgpt">ChatGPT (Paid)</option>
+                    <option value="claude">Claude (Paid)</option>
+                </select>
+            </div>
+
+            <h2>📋 Configuration</h2>
+
+            <div class="form-group">
+                <label for="lob">Line of Business</label>
+                <select id="lob">
+                    <option value="health-insurance">Health Insurance</option>
+                    <option value="auto-insurance">Auto Insurance</option>
+                    <option value="property-insurance">Property Insurance</option>
+                    <option value="life-insurance">Life Insurance</option>
+                    <option value="general">General</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="testCount">Number of Test Cases</label>
+                <input type="number" id="testCount" value="50" min="10" max="200" />
+            </div>
+
+            <h2>🎯 Test Categories</h2>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="functional" checked />
+                    <label for="functional">Functional</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="boundary" checked />
+                    <label for="boundary">Boundary</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ui" />
+                    <label for="ui">UI</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="business" />
+                    <label for="business">Business</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="negative" />
+                    <label for="negative">Negative</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="integration" />
+                    <label for="integration">Integration</label>
+                </div>
+            </div>
+
+            <button class="button" id="generateBtn" onclick="generateTestCases()">
+                🚀 Generate with AI
+            </button>
+        </div>
+
+        <div class="status-section">
+            <div>
+                <h1>📊 AI Status</h1>
+                <div class="status-box ready">
+                    <span class="status-icon">✓</span>
+                    <span>Gemini Ready</span>
+                </div>
+                <div class="status-box ready">
+                    <span class="status-icon">✓</span>
+                    <span>Groq Ready</span>
+                </div>
+                <div class="status-box ready">
+                    <span class="status-icon">✓</span>
+                    <span>ChatGPT Ready</span>
+                </div>
+                <div class="status-box ready">
+                    <span class="status-icon">✓</span>
+                    <span>Claude Ready</span>
+                </div>
+            </div>
+
+            <div>
+                <h2>📈 Results</h2>
+                <div id="statusMessage" class="status-box ready" style="display: none;">
+                    <span class="status-icon" id="statusIcon">✓</span>
+                    <span id="statusText">Ready</span>
+                </div>
+                <div id="resultsContainer" class="results-container" style="display: none;"></div>
+                <div class="export-buttons" id="exportButtons" style="display: none;">
+                    <button class="export-btn" onclick="exportToExcel()">📊 Excel</button>
+                    <button class="export-btn" onclick="exportToJSON()">📄 JSON</button>
+                    <button class="export-btn" onclick="exportToCSV()">📋 CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let generatedTestCases = [];
+
+        async function generateTestCases() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const aiModel = document.getElementById('aiModel').value;
+            const testCount = parseInt(document.getElementById('testCount').value);
+            const lob = document.getElementById('lob').value;
+
+            const categories = [];
+            if (document.getElementById('functional').checked) categories.push('Functional');
+            if (document.getElementById('boundary').checked) categories.push('Boundary');
+            if (document.getElementById('ui').checked) categories.push('UI');
+            if (document.getElementById('business').checked) categories.push('Business');
+            if (document.getElementById('negative').checked) categories.push('Negative');
+            if (document.getElementById('integration').checked) categories.push('Integration');
+
+            if (!apiKey) {
+                showStatus('error', '❌ Please enter API key');
+                return;
+            }
+
+            if (categories.length === 0) {
+                showStatus('error', '❌ Please select at least one category');
+                return;
+            }
+
+            showStatus('loading', '⏳ Generating test cases...');
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const prompt = `Generate exactly ${testCount} test cases for a ${lob} system.
+Categories: ${categories.join(', ')}
+
+For each test case, provide:
+1. Test Case ID
+2. Title
+3. Description
+4. Preconditions
+5. Steps
+6. Expected Result
+7. Category
+
+Format as numbered list. Be specific and realistic.`;
+
+                let response;
+
+                if (aiModel === 'gemini') {
+                    response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: prompt }]
+                            }]
+                        })
+                    });
+                } else if (aiModel === 'groq') {
+                    response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + apiKey
+                        },
+                        body: JSON.stringify({
+                            model: 'mixtral-8x7b-32768',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 4000
+                        })
+                    });
+                } else if (aiModel === 'chatgpt') {
+                    response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + apiKey
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-3.5-turbo',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 4000
+                        })
+                    });
+                } else if (aiModel === 'claude') {
+                    response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-sonnet-20240229',
+                            max_tokens: 4000,
+                            messages: [{ role: 'user', content: prompt }]
+                        })
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                let content = '';
+
+                if (aiModel === 'gemini') {
+                    content = data.candidates[0].content.parts[0].text;
+                } else if (aiModel === 'groq' || aiModel === 'chatgpt') {
+                    content = data.choices[0].message.content;
+                } else if (aiModel === 'claude') {
+                    content = data.content[0].text;
+                }
+
+                generatedTestCases = parseTestCases(content);
+                showStatus('ready', `✓ Generated ${generatedTestCases.length} test cases`);
+                displayResults();
+                document.getElementById('exportButtons').style.display = 'flex';
+
+            } catch (error) {
+                showStatus('error', `❌ Error: ${error.message}`);
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function parseTestCases(content) {
+            const cases = [];
+            const lines = content.split('\n');
+            let currentCase = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.match(/^\d+\./)) {
+                    if (Object.keys(currentCase).length > 0) {
+                        cases.push(currentCase);
+                    }
+                    currentCase = { title: line };
+                } else if (line) {
+                    currentCase.description = (currentCase.description || '') + ' ' + line;
+                }
+            });
+
+            if (Object.keys(currentCase).length > 0) {
+                cases.push(currentCase);
+            }
+
+            return cases.slice(0, 100);
+        }
+
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = generatedTestCases.map((tc, i) => 
+                `<div class="test-case"><strong>TC${i+1}:</strong> ${tc.title || 'Test Case'}</div>`
+            ).join('');
+            container.style.display = 'block';
+        }
+
+        function showStatus(type, message) {
+            const statusBox = document.getElementById('statusMessage');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+
+            statusBox.className = 'status-box ' + type;
+            statusIcon.textContent = type === 'ready' ? '✓' : type === 'error' ? '✗' : '⏳';
+            statusText.textContent = message;
+            statusBox.style.display = 'flex';
+        }
+
+        function exportToExcel() {
+            let csv = 'Test Case ID,Title,Description\n';
+            generatedTestCases.forEach((tc, i) => {
+                csv += `TC${i+1},"${tc.title || ''}","${(tc.description || '').substring(0, 100)}"\n`;
+            });
+
+            const link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            link.download = 'test_cases.csv';
+            link.click();
+        }
+
+        function exportToJSON() {
+            const json = JSON.stringify(generatedTestCases, null, 2);
+            const link = document.createElement('a');
+            link.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+            link.download = 'test_cases.json';
+            link.click();
+        }
+
+        function exportToCSV() {
+            exportToExcel();
+        }
+    </script>
+</body>
+</html>
